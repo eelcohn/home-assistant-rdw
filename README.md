@@ -15,8 +15,8 @@ sensors (Optional)  Sensors to display in the frontend
 ```
 sensor:
   - platform: rdw
-    name: "Mercedes E200 Cabrio"
-    plate: XL007H
+    name: "BMW"
+    plate: XF007J
     sensors:
       - expdate
       - insured
@@ -38,11 +38,11 @@ sensor:
 
 homeassistant:
   customize:
-    sensor.mercedes_e200_cabrio_expdate:
+    sensor.bmw_expdate:
       friendly_name: "APK Vervaldatum"
-    sensor.mercedes_e200_cabrio_insured:
+    sensor.bmw_insured:
       friendly_name: "Verzekeringsstatus"
-    sensor.mercedes_e200_cabrio_recall:
+    sensor.bmw_recall:
       friendly_name: "Terugroepstatus"
 
 automation:
@@ -52,12 +52,12 @@ automation:
   - alias: APK date expiration notification
     trigger:
       - platform: template
-        value_template: "{{ as_timestamp(states('sensor.mercedes_e200_cabrio_expdate')) == (as_timestamp(states('sensor.date')) + timedelta(days=30)) }}"
+        value_template: "{{ as_timestamp(states('sensor.bmw_expdate')) == (as_timestamp(states('sensor.date')) + timedelta(days=30)) }}"
     action:
       - service: notify.owner
         data_template:
           title: '*Auto*'
-          message: De APK keuring verloopt op {{ states.sensor.mercedes_e200_cabrio_expdate.state }}. Plan een APK keuring bij de garage.
+          message: De APK keuring verloopt op {{ states.sensor.bmw_expdate.state }}. Plan een APK keuring bij de garage.
 
     # ------------------------------------------------------- #
     # Notify when the car's insurance has expired             #
@@ -66,7 +66,7 @@ automation:
     initial_state: True
     trigger:
       - platform: state
-        entity_id: sensor.mercedes_e200_cabrio_insured
+        entity_id: sensor.bmw_insured
         to: 'False'
     action:
       - service: notify.owner
@@ -81,7 +81,7 @@ automation:
     initial_state: False
     trigger:
       - platform: state
-        entity_id: sensor.mercedes_e200_cabrio_recall
+        entity_id: sensor.bmw_recall
         to: 'True'
     action:
       - service: notify.owner
