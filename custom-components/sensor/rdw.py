@@ -1,12 +1,12 @@
 """
-RDW sensor version 1.0.1 Eelco Huininga 2019
+RDW sensor version 1.0.2 Eelco Huininga 2019
 Retrieves information on cars registered in the
 Netherlands. Currently implemented sensors are APK
 (general periodic check), recall information and
 insurance status.
 """
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 from datetime import datetime, timedelta
 from requests import Session
@@ -39,7 +39,7 @@ RDW_DATEFORMAT = '%d/%m/%Y'
 SENSOR_TYPES = {
     'expdate': ['Expdate', 'mdi:calendar'],
     'insured': ['Insured', 'mdi:car'],
-    'recall': ['Recall', 'mdi:car'],
+    'recall':  ['Recall',  'mdi:wrench'],
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -212,3 +212,4 @@ class RDWSensorData(object):
                 self.recall = rdw_data['openstaande_terugroepactie_indicator']
             except:
                 self.insured = None
+
