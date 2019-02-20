@@ -16,8 +16,8 @@ sensors (Optional)     Sensors to display in the frontend
 ```
 sensor:
   - platform: rdw
-    name: "BMW"
-    plate: XF007J
+    name: "Toyota Auris"
+    plate: 16RSL9
     dateformat: %d %b %Y
     sensors:
       - expdate
