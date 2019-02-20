@@ -5,6 +5,7 @@ RDW sensor module for Home Assistant.
 ```
 plate (Required)    Dutch license plate id
 name (Optional)     Custom name for the sensor; default value is RDW
+dateformat (Optional)  Custom date format; default format is %d-%m-%Y
 sensors (Optional)  Sensors to display in the frontend
   expdate           Expire date; the date when the APK expires
   insured           Insured flag; signals if the car is currently registered as insured (True/False)
@@ -17,6 +18,7 @@ sensor:
   - platform: rdw
     name: "BMW"
     plate: XF007J
+    dateformat: %d %b %Y
     sensors:
       - expdate
       - insured
@@ -47,12 +49,12 @@ homeassistant:
 
 automation:
     # ------------------------------------------------------- #
-    # Notify when the APK date is about to expire             #
+    # Notify 21 days before the APK date expires              #
     # ------------------------------------------------------- #
   - alias: APK date expiration notification
     trigger:
       - platform: template
-        value_template: "{{ as_timestamp(states('sensor.bmw_expdate')) == (as_timestamp(states('sensor.date')) + timedelta(days=30)) }}"
+        value_template: "{{ ((as_timestamp(strptime(states('sensor.seat_leon_expdate'), '%d %b %Y')) / 86400) | int) == ((as_timestamp(strptime(states('sensor.date'), '%Y-%m-%d')) / 86400) | int) + 21 }} }}"
     action:
       - service: notify.owner
         data_template:
