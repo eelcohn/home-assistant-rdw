@@ -1,12 +1,12 @@
 """
-RDW sensor version 1.0.2 Eelco Huininga 2019
+RDW sensor version 1.0.3 Eelco Huininga 2019
 Retrieves information on cars registered in the
 Netherlands. Currently implemented sensors are APK
 (general periodic check), recall information and
 insurance status.
 """
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 from datetime import datetime, timedelta
 from requests import Session
@@ -23,18 +23,18 @@ from homeassistant.util import Throttle
 
 REQUIREMENTS = []
 
-_RESOURCE = 'https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken={}'
+_RESOURCE_APK = 'https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken={}'
 _LOGGER = logging.getLogger(__name__)
 
 CONF_PLATE = 'plate'
-CONF_SCAN_INTERVAL = 'scan_interval'
 CONF_SENSORS = 'sensors'
+CONF_DATEFORMAT = 'dateformat'
+CONF_SCAN_INTERVAL = 'scan_interval'
 
 DEFAULT_NAME = 'RDW'
 DEFAULT_ATTRIBUTION = 'Data provided by RDW'
+DEFAULT_DATEFORMAT = '%d-%m-%Y'
 DEFAULT_SCAN_INTERVAL = timedelta(hours=24)
-
-RDW_DATEFORMAT = '%d/%m/%Y'
 
 SENSOR_TYPES = {
     'expdate': ['Expdate', 'mdi:calendar'],
@@ -47,6 +47,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Optional(CONF_SENSORS, default=[]):
         vol.All(cv.ensure_list, [vol.In(SENSOR_TYPES)]),
+    vol.Optional(CONF_DATEFORMAT, default=DEFAULT_DATEFORMAT):
+        cv.string,
     vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL):
         cv.time_period
 })
@@ -57,15 +59,16 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     name = config.get(CONF_NAME)
     plate = config.get(CONF_PLATE)
+    dateformat = config.get(CONF_DATEFORMAT)
     interval = config.get(CONF_SCAN_INTERVAL)
 
-    data = RDWSensorData(hass, plate.upper(), interval)
+    data = RDWSensorAPKData(hass, plate.upper(), interval)
 
     dev = []
     for sensor_type in config[CONF_SENSORS]:
         dev.append(RDWSensor(
             hass, data, sensor_type, name,
-            plate.upper()))
+            plate.upper(), dateformat))
 
     add_devices(dev, True)
 
@@ -73,13 +76,14 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class RDWSensor(Entity):
     """Representation of a RDW Sensor."""
 
-    def __init__(self, hass, data, sensor_type, name, plate):
+    def __init__(self, hass, data, sensor_type, name, plate, dateformat):
         """Initialize the sensor."""
         self._hass = hass
         self._data = data
         self._sensor_type = sensor_type
         self._name = name
         self._plate = plate
+        self._dateformat = dateformat
         self._icon = SENSOR_TYPES[sensor_type][1]
         self._state = None
         self._attributes = {ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION}
@@ -115,7 +119,7 @@ class RDWSensor(Entity):
         self._data.update()
 
         if self._sensor_type == 'expdate':
-            value = self._data.expdate
+            value = datetime.strptime(self._data.expdate, '%Y%m%d').date().strftime(self._dateformat)
         elif self._sensor_type == 'insured':
             if self._data.insured == 'Ja':
                 value = True
@@ -140,7 +144,7 @@ class RDWSensor(Entity):
 
     
 
-class RDWSensorData(object):
+class RDWSensorAPKData(object):
     """
     Get car data from the RDW API.
     """
@@ -163,20 +167,20 @@ class RDWSensorData(object):
 
     def get_data_from_api(self):
         """
-        Get data from the RDW API
-        :return: A list containing the RDW data
+        Get data from the RDW APK API
+        :return: A list containing the RDW APK data
         """
 
         try:
-            result = self._session.get(_RESOURCE.format(self._plate), data="json={}")
+            result = self._session.get(_RESOURCE_APK.format(self._plate), data="json={}")
         except:
-            _LOGGER.error("RDW: Unable to connect to the RDW API")
+            _LOGGER.error("RDW: Unable to connect to the RDW APK API")
             return None
 
         self._current_status_code = result.status_code
 
         if self._current_status_code != 200:
-            _LOGGER.error("RDW: Got an invalid HTTP status code %s", self._current_status_code)
+            _LOGGER.error("RDW: Got an invalid HTTP status code %s from RDW APK API", self._current_status_code)
             return None
 
         _LOGGER.debug("RDW: raw data: %s", result)
@@ -184,7 +188,7 @@ class RDWSensorData(object):
         try:
             data = result.json()[0]
         except:
-            _LOGGER.error("RDW: Got invalid response from RDW API. Is the license plate id %s correct?", self._plate)
+            _LOGGER.error("RDW: Got invalid response from RDW APK API. Is the license plate id %s correct?", self._plate)
             data = None
 
         return data
@@ -201,7 +205,7 @@ class RDWSensorData(object):
 
         if rdw_data is not None:
             try:
-                self.expdate = datetime.strptime(rdw_data['vervaldatum_apk'], RDW_DATEFORMAT).date()
+                self.expdate = rdw_data['vervaldatum_apk']
             except:
                 self.expdate = None
             try:
@@ -212,4 +216,3 @@ class RDWSensorData(object):
                 self.recall = rdw_data['openstaande_terugroepactie_indicator']
             except:
                 self.insured = None
-
