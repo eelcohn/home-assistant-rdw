@@ -18,7 +18,7 @@ sensor:
   - platform: rdw
     name: "Toyota Auris"
     plate: 16RSL9
-    dateformat: %d %b %Y
+    dateformat: '%d %b %Y'
     sensors:
       - expdate
       - insured
