@@ -1,7 +1,7 @@
 {
     "sensor.rdw": {
-      "updated_at": "2019-01-28",
-      "version": "1.0.2",
+      "updated_at": "2019-02-20",
+      "version": "1.0.3",
       "local_location": "/custom_components/sensor/rdw.py",
       "remote_location": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/master/custom-components/sensor/rdw.py",
       "visit_repo": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/",
