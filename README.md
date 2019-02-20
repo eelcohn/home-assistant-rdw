@@ -52,7 +52,7 @@ automation:
   - alias: APK date expiration notification
     trigger:
       - platform: template
-        value_template: "{{ ((as_timestamp(strptime(states('sensor.seat_leon_expdate'), '%d %b %Y')) / 86400) | int) == ((as_timestamp(strptime(states('sensor.date'), '%Y-%m-%d')) / 86400) | int) + 21 }} }}"
+        value_template: "{{ ((as_timestamp(strptime(states('sensor.toyota_auris_expdate'), '%d %b %Y')) / 86400) | int) == ((as_timestamp(strptime(states('sensor.date'), '%Y-%m-%d')) / 86400) | int) + 21 }} }}"
     action:
       - service: notify.owner
         data_template:
