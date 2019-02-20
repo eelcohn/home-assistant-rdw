@@ -35,8 +35,6 @@ sensor:
     plate: 99WGDF
     sensors:
       - expdate
-      - insured
-      - recall
 
 homeassistant:
   customize:
