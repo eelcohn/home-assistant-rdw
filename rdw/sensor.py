@@ -1,12 +1,12 @@
 """
-RDW sensor version 1.0.3 Eelco Huininga 2019
+RDW sensor version 1.0.4 Eelco Huininga 2019
 Retrieves information on cars registered in the
 Netherlands. Currently implemented sensors are APK
 (general periodic check), recall information and
 insurance status.
 """
 
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
 from datetime import datetime, timedelta
 from requests import Session
