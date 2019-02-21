@@ -1,6 +1,14 @@
 # home-assistant-rdw
 RDW sensor module for Home Assistant.
 
+### Installation
+Open a shell and go to your Home Assistant config path, and do:
+```
+mkdir custom_components
+cd custom_components
+git clone https://github.com/eelcohn/home-assistant-rdw rdw
+```
+
 ### Configuration variables
 ```
 plate (Required)       Dutch license plate id
