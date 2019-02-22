@@ -1,12 +1,11 @@
 """
-RDW sensor version 1.0.4 Eelco Huininga 2019
-Retrieves information on cars registered in the
-Netherlands. Currently implemented sensors are APK
-(general periodic check), recall information and
-insurance status.
+RDW sensor version 2.0.0 Eelco Huininga 2019
+Retrieves information on cars registered in the Netherlands. Currently
+implemented sensors are APK (general periodic check) insurance status
+and recall information
 """
 
-VERSION = '1.0.4'
+VERSION = '2.0.0'
 
 from datetime import datetime, timedelta
 from requests import Session
@@ -24,6 +23,8 @@ from homeassistant.util import Throttle
 REQUIREMENTS = []
 
 _RESOURCE_APK = 'https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken={}'
+_RESOURCE_RECALL = 'https://opendata.rdw.nl/resource/t49b-isb7.json?kenteken={}'
+_RESOURCE_RECALLINFO = 'https://terugroepregister.rdw.nl/Pages/Terugroepactie.aspx?mgpnummer={}'
 _LOGGER = logging.getLogger(__name__)
 
 CONF_PLATE = 'plate'
@@ -118,31 +119,20 @@ class RDWSensor(Entity):
         """Fetch new state data for the sensor."""
         self._data.update()
 
+        self._state = STATE_UNKNOWN
+        self._attributes = {}
+
         if self._sensor_type == 'expdate':
-            value = datetime.strptime(self._data.expdate, '%Y%m%d').date().strftime(self._dateformat)
+            self._state = datetime.strptime(self._data.expdate, '%Y%m%d').date().strftime(self._dateformat)
         elif self._sensor_type == 'insured':
             if self._data.insured == 'Ja':
-                value = True
+                self._state = True
             elif self._data.insured == 'Nee':
-                value = False
-            else:
-                value = None
+                self._state = False
         elif self._sensor_type == 'recall':
-            if self._data.recall == 'Ja':
-                value = True
-            elif self._data.recall == 'Nee':
-                value = False
-            else:
-                value = None
- 
-        if value is None:
-            value = STATE_UNKNOWN
-            self._attributes = {}
-        else:
-            self._state = value   
-            self._attributes = self._data.attrs 
-
-    
+            self._state = self._data.recall
+            self._attributes = self._data.attrs
+   
 
 class RDWSensorAPKData(object):
     """
@@ -165,7 +155,7 @@ class RDWSensorAPKData(object):
         self.recall = None
         self.attrs = {}
 
-    def get_data_from_api(self):
+    def get_data_from_apk_api(self):
         """
         Get data from the RDW APK API
         :return: A list containing the RDW APK data
@@ -183,7 +173,7 @@ class RDWSensorAPKData(object):
             _LOGGER.error("RDW: Got an invalid HTTP status code %s from RDW APK API", self._current_status_code)
             return None
 
-        _LOGGER.debug("RDW: raw data: %s", result)
+        _LOGGER.debug("RDW: raw APK data: %s", result)
 
         try:
             data = result.json()[0]
@@ -193,26 +183,54 @@ class RDWSensorAPKData(object):
 
         return data
 
+    def get_data_from_recall_api(self):
+        """
+        Get data from the RDW Recall API
+        :return: A list containing the RDW Recall data
+        """
+
+        try:
+            result = self._session.get(_RESOURCE_RECALL.format(self._plate), data="json={}")
+        except:
+            _LOGGER.error("RDW: Unable to connect to the RDW Recall API")
+            return None
+
+        self._current_status_code = result.status_code
+
+        if self._current_status_code != 200:
+            _LOGGER.error("RDW: Got an invalid HTTP status code %s from RDW Recall API", self._current_status_code)
+            return None
+
+        _LOGGER.debug("RDW: raw recall data: %s", result)
+
+        try:
+            data = result.json()
+        except:
+            _LOGGER.error("RDW: Got invalid response from RDW Recall API. Is the license plate id %s correct?", self._plate)
+            data = None
+
+        return data
+
 
     @Throttle(_interval)
     def update(self):
-        self.expdate = None
-        self.insured = None
-        self.recall = None
         self.attrs = {}
 
-        rdw_data = (self.get_data_from_api())
+        rdw_apkdata = (self.get_data_from_apk_api())
+        rdw_recalldata = (self.get_data_from_recall_api())
 
-        if rdw_data is not None:
+        if rdw_apkdata is not None:
             try:
-                self.expdate = rdw_data['vervaldatum_apk']
+                self.expdate = rdw_apkdata['vervaldatum_apk']
             except:
                 self.expdate = None
             try:
-                self.insured = rdw_data['wam_verzekerd']
+                self.insured = rdw_apkdata['wam_verzekerd']
             except:
                 self.insured = None
-            try:
-                self.recall = rdw_data['openstaande_terugroepactie_indicator']
-            except:
-                self.insured = None
+
+        for recall in rdw_recalldata:
+            if recall['code_status'] is not 'P':
+                self.attrs[recall['referentiecode_rdw'].lower()] = _RESOURCE_RECALLINFO.format(recall['referentiecode_rdw'])
+
+        self.recall = len(self.attrs)
