@@ -38,9 +38,9 @@ DEFAULT_DATEFORMAT = '%d-%m-%Y'
 DEFAULT_SCAN_INTERVAL = timedelta(hours=24)
 
 SENSOR_TYPES = {
-    'expdate': ['Expdate', 'mdi:calendar'],
-    'insured': ['Insured', 'mdi:car'],
-    'recall':  ['Recall',  'mdi:wrench'],
+    'expdate': ['Expdate', 'mdi:calendar', 'mdi:alert-outline'],
+    'insured': ['Insured', 'mdi:car', 'mdi:alert-outline'],
+    'recall':  ['Recall',  'mdi:wrench', 'mdi:alert-outline'],
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -124,14 +124,19 @@ class RDWSensor(Entity):
 
         if self._sensor_type == 'expdate':
             self._state = datetime.strptime(self._data.expdate, '%Y%m%d').date().strftime(self._dateformat)
+            if datetime.strptime(self._data.expdate, '%Y%m%d') < datetime.now():
+                self._icon = SENSOR_TYPES['expdate'][2]
         elif self._sensor_type == 'insured':
             if self._data.insured == 'Ja':
                 self._state = True
             elif self._data.insured == 'Nee':
                 self._state = False
+                self._icon = SENSOR_TYPES['insured'][2]
         elif self._sensor_type == 'recall':
             self._state = self._data.recall
             self._attributes = self._data.attrs
+            if self.state > 0:
+                self._icon = SENSOR_TYPES['recall'][2]
    
 
 class RDWSensorAPKData(object):
