@@ -98,3 +98,11 @@ automation:
           message: Er is een terugroepactie uitgevaardigd voor de auto. Maak een afspraak bij de garage om het probleem te verhelpen.
 
 ```
+### How can I test the notifications?
+##### Testing APK expiration date notification:
+Pick a random license plate from https://opendata.rdw.nl/resource/m9d7-ebf2.json?vervaldatum_apk=20000222 and add it to your `configuration.yaml`
+##### Testing insurance state notifications:
+Pick a random license plate from https://opendata.rdw.nl/resource/m9d7-ebf2.json?wam_verzekerd=Nee and add it to your `configuration.yaml`
+##### Testing unresolved recall notifications:
+Pick a random license plate from https://opendata.rdw.nl/resource/t49b-isb7.json?code_status=O and add it to your `configuration.yaml`
+
