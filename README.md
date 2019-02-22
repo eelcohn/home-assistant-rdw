@@ -11,13 +11,14 @@ git clone https://github.com/eelcohn/home-assistant-rdw rdw
 
 ### Configuration variables
 ```
-plate (Required)       Dutch license plate id
-name (Optional)        Custom name for the sensor; default value is RDW
-dateformat (Optional)  Custom date format; default format is %d-%m-%Y
-sensors (Optional)     Sensors to display in the frontend
-  expdate              Expire date; the date when the APK expires
-  insured              Insured flag; signals if the car is currently registered as insured (True/False)
-  recall               Unresolved recalls; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
+plate (Required)          Dutch license plate id
+name (Optional)           Custom name for the sensor; default value is RDW
+dateformat (Optional)     Custom date format; default format is %d-%m-%Y
+scan_interval (Optional)  Time in seconds between updates (default is 86400 seconds, which is 1 day)
+sensors (Optional)        Sensors to display in the frontend
+  expdate                 Expire date; the date when the APK expires
+  insured                 Insured flag; signals if the car is currently registered as insured (True/False)
+  recall                  Unresolved recalls; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
 ```
 
 ### Example code:
