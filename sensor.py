@@ -63,7 +63,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     dateformat = config.get(CONF_DATEFORMAT)
     interval = config.get(CONF_SCAN_INTERVAL)
 
-    data = RDWSensorAPKData(hass, plate.upper(), interval)
+    data = RDWSensorData(hass, plate.upper(), interval)
 
     dev = []
     for sensor_type in config[CONF_SENSORS]:
@@ -139,7 +139,7 @@ class RDWSensor(Entity):
                 self._icon = SENSOR_TYPES['recall'][2]
    
 
-class RDWSensorAPKData(object):
+class RDWSensorData(object):
     """
     Get car data from the RDW API.
     """
