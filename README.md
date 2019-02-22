@@ -17,7 +17,7 @@ dateformat (Optional)  Custom date format; default format is %d-%m-%Y
 sensors (Optional)     Sensors to display in the frontend
   expdate              Expire date; the date when the APK expires
   insured              Insured flag; signals if the car is currently registered as insured (True/False)
-  recall               Recall flag; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
+  recall               Unresolved recalls; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
 ```
 
 ### Example code:
