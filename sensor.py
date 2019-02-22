@@ -39,8 +39,8 @@ DEFAULT_SCAN_INTERVAL = timedelta(hours=24)
 
 SENSOR_TYPES = {
     'expdate': ['Expdate', 'mdi:calendar', 'mdi:alert-outline'],
-    'insured': ['Insured', 'mdi:car', 'mdi:alert-outline'],
-    'recall':  ['Recall',  'mdi:wrench', 'mdi:alert-outline'],
+    'insured': ['Insured', 'mdi:car',      'mdi:alert-outline'],
+    'recall':  ['Recall',  'mdi:wrench',   'mdi:alert-outline'],
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
