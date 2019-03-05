@@ -14,13 +14,14 @@ Support for this module can be found in [this thread](https://community.home-ass
 
 ### Configuration variables
 ```
-plate (Required)       Dutch license plate id
-name (Optional)        Custom name for the sensor; default value is RDW
-dateformat (Optional)  Custom date format; default format is %d-%m-%Y
-sensors (Optional)     Sensors to display in the frontend
-  expdate              Expire date; the date when the APK expires
-  insured              Insured flag; signals if the car is currently registered as insured (True/False)
-  recall               Recall flag; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
+plate         (Required)  Dutch license plate id
+name          (Optional)  Custom name for the sensor; default value is RDW
+dateformat    (Optional)  Custom date format; default format is %d-%m-%Y
+scan_interval (Optional)  Time in seconds between updates (default is 86400 seconds, which is 1 day)
+sensors       (Optional)  Sensors to display in the frontend
+  expdate                 Expire date; the date when the APK expires
+  insured                 Insured flag; signals if the car is currently registered as insured (True/False)
+  recall                  Unresolved recalls; signals if the manufacurer of the car has issued a recall because of a serious safety problem```
 ```
 
 ### Example code:
@@ -101,3 +102,11 @@ automation:
           message: Er is een terugroepactie uitgevaardigd voor de auto. Maak een afspraak bij de garage om het probleem te verhelpen.
 
 ```
+### How can I test the notifications?
+##### Testing APK expiration date notification:
+Pick a random license plate from https://opendata.rdw.nl/resource/m9d7-ebf2.json?vervaldatum_apk=20000222 and add it to your `configuration.yaml`
+##### Testing insurance state notifications:
+Pick a random license plate from https://opendata.rdw.nl/resource/m9d7-ebf2.json?wam_verzekerd=Nee and add it to your `configuration.yaml`
+##### Testing unresolved recall notifications:
+Pick a random license plate from https://opendata.rdw.nl/resource/t49b-isb7.json?code_status=O and add it to your `configuration.yaml`
+
