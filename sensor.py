@@ -137,8 +137,8 @@ class RDWSensor(Entity):
             self._attributes = self._data.attrs
             if self.state > 0:
                 self._icon = SENSOR_TYPES['recall'][2]
-   
 
+                
 class RDWSensorData(object):
     """
     Get car data from the RDW API.

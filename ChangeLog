@@ -1,0 +1,5 @@
+v2.0.0:
+* Added ChangeLog
+* Added detailed recall information as attributes of the recall sensor
+* The sensor icons will change to a warning icon if the APK date has expired, if the car isn't insured or if there's a unresolved recall
+* Fixed custom_updater.json

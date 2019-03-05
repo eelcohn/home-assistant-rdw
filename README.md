@@ -9,6 +9,9 @@ cd custom_components
 git clone https://github.com/eelcohn/home-assistant-rdw rdw
 ```
 
+### Support
+Support for this module can be found in [this thread](https://community.home-assistant.io/t/custom-sensor-for-dutch-license-plate-checks-apk-check/94427)
+
 ### Configuration variables
 ```
 plate         (Required)  Dutch license plate id
