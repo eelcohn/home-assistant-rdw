@@ -5,6 +5,6 @@
       "local_location": "/custom_components/rdw/sensor.py",
       "remote_location": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/master/sensor.py",
       "visit_repo": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/",
-      "changelog": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/releases/latest"
+      "changelog": "https://raw.githubusercontent.com/eelcohn/home-assistant-rdw/master/ChangeLog"
     }
 }
