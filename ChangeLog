@@ -1,3 +1,6 @@
+v2.0.1:
+* Line wrapping to max 79 chars (required for merge in home-assistant base code)
+
 v2.0.0:
 * Added ChangeLog
 * Added detailed recall information as attributes of the recall sensor
