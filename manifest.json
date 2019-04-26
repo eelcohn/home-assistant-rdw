@@ -1,0 +1,8 @@
+{
+  "domain": "rdw",
+  "name": "RDW sensor",
+  "documentation": "https://www.home-assistant.io/components/rdw",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": []
+}
