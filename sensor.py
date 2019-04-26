@@ -1,11 +1,11 @@
 """
-RDW sensor version 2.0.0 Eelco Huininga 2019
+RDW sensor version 2.0.1 Eelco Huininga 2019
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
 """
 
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 
 from datetime import datetime, timedelta
 from requests import Session
@@ -22,9 +22,12 @@ from homeassistant.util import Throttle
 
 REQUIREMENTS = []
 
-_RESOURCE_APK = 'https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken={}'
-_RESOURCE_RECALL = 'https://opendata.rdw.nl/resource/t49b-isb7.json?kenteken={}'
-_RESOURCE_RECALLINFO = 'https://terugroepregister.rdw.nl/Pages/Terugroepactie.aspx?mgpnummer={}'
+_RESOURCE_APK = \
+    'https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken={}'
+_RESOURCE_RECALL = \
+    'https://opendata.rdw.nl/resource/t49b-isb7.json?kenteken={}'
+_RESOURCE_RECALLINFO = \
+    'https://terugroepregister.rdw.nl/Pages/Terugroepactie.aspx?mgpnummer={}'
 _LOGGER = logging.getLogger(__name__)
 
 CONF_PLATE = 'plate'
@@ -123,8 +126,10 @@ class RDWSensor(Entity):
         self._attributes = {}
 
         if self._sensor_type == 'expdate':
-            self._state = datetime.strptime(self._data.expdate, '%Y%m%d').date().strftime(self._dateformat)
-            if datetime.strptime(self._data.expdate, '%Y%m%d') < datetime.now():
+            self._state = datetime.strptime(self._data.expdate, '%Y%m%d')
+            self._state = self.state.date().strftime(self._dateformat)
+            if datetime.strptime(self._data.expdate, '%Y%m%d') < \
+               datetime.now():
                 self._icon = SENSOR_TYPES['expdate'][2]
         elif self._sensor_type == 'insured':
             if self._data.insured == 'Ja':
@@ -167,7 +172,8 @@ class RDWSensorData(object):
         """
 
         try:
-            result = self._session.get(_RESOURCE_APK.format(self._plate), data="json={}")
+            result = self._session.get(_RESOURCE_APK.format(self._plate),
+                     data="json={}")
         except:
             _LOGGER.error("RDW: Unable to connect to the RDW APK API")
             return None
@@ -175,7 +181,9 @@ class RDWSensorData(object):
         self._current_status_code = result.status_code
 
         if self._current_status_code != 200:
-            _LOGGER.error("RDW: Got an invalid HTTP status code %s from RDW APK API", self._current_status_code)
+            _LOGGER.error(
+                "RDW: Got an invalid HTTP status code %s from RDW APK API", \
+                self._current_status_code)
             return None
 
         _LOGGER.debug("RDW: raw APK data: %s", result)
@@ -183,7 +191,10 @@ class RDWSensorData(object):
         try:
             data = result.json()[0]
         except:
-            _LOGGER.error("RDW: Got invalid response from RDW APK API. Is the license plate id %s correct?", self._plate)
+            _LOGGER.error(
+                "RDW: Got invalid response from RDW APK API. \
+                Is the license plate id %s correct?", \
+                self._plate)
             data = None
 
         return data
@@ -195,7 +206,8 @@ class RDWSensorData(object):
         """
 
         try:
-            result = self._session.get(_RESOURCE_RECALL.format(self._plate), data="json={}")
+            result = self._session.get(_RESOURCE_RECALL.format(self._plate),
+                     data="json={}")
         except:
             _LOGGER.error("RDW: Unable to connect to the RDW Recall API")
             return None
@@ -203,7 +215,9 @@ class RDWSensorData(object):
         self._current_status_code = result.status_code
 
         if self._current_status_code != 200:
-            _LOGGER.error("RDW: Got an invalid HTTP status code %s from RDW Recall API", self._current_status_code)
+            _LOGGER.error(
+                "RDW: Got an invalid HTTP status code %s from RDW Recall API",
+                self._current_status_code)
             return None
 
         _LOGGER.debug("RDW: raw recall data: %s", result)
@@ -211,7 +225,10 @@ class RDWSensorData(object):
         try:
             data = result.json()
         except:
-            _LOGGER.error("RDW: Got invalid response from RDW Recall API. Is the license plate id %s correct?", self._plate)
+            _LOGGER.error(
+                "RDW: Got invalid response from RDW Recall API. \
+                Is the license plate id %s correct?",
+                self._plate)
             data = None
 
         return data
@@ -236,6 +253,7 @@ class RDWSensorData(object):
 
         for recall in rdw_recalldata:
             if recall['code_status'] is not 'P':
-                self.attrs[recall['referentiecode_rdw'].lower()] = _RESOURCE_RECALLINFO.format(recall['referentiecode_rdw'])
+                self.attrs[recall['referentiecode_rdw'].lower()] = \
+                    _RESOURCE_RECALLINFO.format(recall['referentiecode_rdw'])
 
         self.recall = len(self.attrs)
