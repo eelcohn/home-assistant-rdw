@@ -193,7 +193,7 @@ class RDWSensorData(object):
         except:
             _LOGGER.error(
                 "RDW: Got invalid response from RDW APK API. \
-                Is the license plate id %s correct?", \
+                Is the license plate id %s correct?",
                 self._plate)
             data = None
 
