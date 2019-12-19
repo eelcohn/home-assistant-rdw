@@ -1,3 +1,7 @@
+v2.0.2:
+* Fixed SyntaxWarning (see issue #6)
+* Fixed error when no recall data is available
+
 v2.0.1:
 * Line wrapping to max 79 chars (required for merge in home-assistant base code)
 * Added __init__.py (required for merge in home-assistant base code)
