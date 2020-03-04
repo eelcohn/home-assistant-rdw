@@ -28,18 +28,21 @@ sensors        (Optional)
 ### Example code:
 ```
 rdw:
+  - plate: 56TRP9
   - plate: 16RSL9
     name: "Toyota Auris"
     dateformat: '%d %b %Y'
+    binary_sensors:
+      - insured
     sensors:
       - expdate
-      - insured
       - recall
   - plate: 0001ES
     name: "Opel Kadett"
+    binary_sensors:
+      - insured
     sensors:
       - expdate
-      - insured
       - recall
   - plate: 99WGDF
     name: "Vlemmix Kipper"
