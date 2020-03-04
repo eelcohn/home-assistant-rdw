@@ -1,0 +1,33 @@
+{
+  "config": {
+    "title": "RDW",
+    "step": {
+      "user": {
+        "title": "Integrate a car with a Dutch license plate",
+        "description": "Please enter the license plate ID for your car.",
+        "data": {
+          "plate": "License plate ID"
+        }
+      },
+      "details": {
+        "title": "Name and dateformat",
+        "description": "Please enter a name and preferred date format",
+        "data": {
+          "name": "Name of the car",
+          "dateformat": "Date format"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "That car is already configured"
+    },
+    "error": {
+      "name_already_configured": "That name is already configured.",
+      "invalid_plate": "Invalid plate ID. Please check that your plate ID is correct.",
+      "invalid_dateformat": "Invalid date format.",
+      "not_registered": "This plate ID is not registered at RDW.",
+      "connection_error": "Could not get data from the RDW API."
+    }
+  }
+}
+
