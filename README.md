@@ -28,6 +28,7 @@ sensors        (Optional)
 ### Example code:
 ```
 rdw:
+  - plate: 56TRP9
   - plate: 16RSL9
     name: "Toyota Auris"
     dateformat: '%d %b %Y'
