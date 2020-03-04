@@ -1,8 +1,10 @@
 {
-  "domain": "rdw",
-  "name": "RDW sensor",
-  "documentation": "https://www.home-assistant.io/components/rdw",
-  "requirements": [],
-  "dependencies": [],
-  "codeowners": []
+	"codeowners": ["@eelcohn"],
+	"config_flow": true,
+	"dependencies": [],
+	"documentation": "https://www.home-assistant.io/integrations/rdw",
+	"domain": "rdw",
+	"name": "RDW",
+	"requirements": ["sodapy==2.0.0"]
 }
+
