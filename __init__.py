@@ -1,4 +1,10 @@
-"""The RDW component."""
+"""
+RDW component version 2.9.1 Eelco Huininga 2019-2020
+Retrieves information on cars registered in the Netherlands. Currently
+implemented sensors are APK (general periodic check) insurance status
+and recall information
+"""
+
 
 import logging
 import voluptuous as vol
@@ -99,12 +105,16 @@ async def async_setup_entry(hass, config_entry):
     if not await rdw.async_update():
         raise PlatformNotReady
 
-#    if config_entry.data[CONF_NAME] is None:
-#        name = await rdw.create_name(rdw.brand, rdw.type)
-#        _LOGGER.debug("RDWEntity::async_setup_entry name: %s", name)
-#        config_entry.data.update({CONF_NAME: name})
+    if config_entry.data[CONF_NAME] is None:
+        name = await rdw.create_name(rdw.brand, rdw.type)
+        _LOGGER.debug("RDWEntity::async_setup_entry name: %s", name)
+        config_entry.data.update({CONF_NAME: name})
 
-    hass.data.update({DOMAIN: {config_entry.data[CONF_PLATE]: rdw}})
+    # Make sure there's a RDW entry in hass.data in case this is the first RDW entity
+    if DOMAIN not in hass.data:
+        hass.data.update({DOMAIN: {}})
+
+    hass.data[DOMAIN].update({config_entry.data[CONF_PLATE]: {'entity': rdw}})
 
     for component in (CONF_BINARY_SENSOR, CONF_SENSOR):
         hass.async_create_task(
@@ -121,7 +131,7 @@ async def async_setup_entry(hass, config_entry):
         else:
             async_dispatcher_send(hass, TOPIC_DATA_UPDATE)
 
-    hass.data[DOMAIN].update({
+    hass.data[DOMAIN][config_entry.data[CONF_PLATE]].update({
         DATA_LISTENER: {
             config_entry.entry_id: async_track_time_interval(
                 hass,
@@ -139,7 +149,7 @@ async def async_unload_entry(hass, config_entry):
 
     _LOGGER.debug("__init__::async_unload_entry config=%s", config_entry)
 
-    cancel = hass.data[DOMAIN][DATA_LISTENER].pop(config_entry.entry_id)
+    cancel = hass.data[DOMAIN][config_entry.data[CONF_PLATE]][DATA_LISTENER].pop(config_entry.entry_id)
     cancel()
 
     for component in ("binary_sensor", "sensor"):
@@ -205,7 +215,7 @@ class RDWEntity(Entity):
 #            raise RDWEntity.ConnectionError
             return False
         else:
-            _LOGGER.debug("RDWEntity::async_update endpoint %s success", RDW_ENDPOINTS['apk']['endpoint'])
+            _LOGGER.debug("RDWEntity::async_update endpoint %s success for %s", RDW_ENDPOINTS['apk']['endpoint'], self._plate)
 
         # Get Recall data from the RDW Open Data API
         try:
@@ -219,7 +229,7 @@ class RDWEntity(Entity):
 #            raise RDWEntity.ConnectionError
             return False
         else:
-            _LOGGER.debug("RDWEntity::async_update endpoint %s success", RDW_ENDPOINTS['recall']['endpoint'])
+            _LOGGER.debug("RDWEntity::async_update endpoint %s success for %s", RDW_ENDPOINTS['recall']['endpoint'], self._plate)
 
         # Check if RDW returned any data
         if not self.apkdata:

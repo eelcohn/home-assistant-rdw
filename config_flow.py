@@ -1,4 +1,10 @@
-"""Config flow to configure the RDW component."""
+"""
+RDW config flow version 2.9.1 Eelco Huininga 2019-2020
+Retrieves information on cars registered in the Netherlands. Currently
+implemented sensors are APK (general periodic check) insurance status
+and recall information
+"""
+
 
 import logging
 import voluptuous as vol
@@ -88,7 +94,12 @@ class RDWFlowHandler(config_entries.ConfigFlow):
             CONF_SCAN_INTERVAL: int(import_config[CONF_SCAN_INTERVAL].total_seconds()),
         })
 
-        return self.async_create_entry(title=import_config[CONF_NAME], data=import_config)
+        if import_config[CONF_NAME] is not None:
+            title = '{} (configuration.yaml)'.format(import_config[CONF_NAME])
+        else:
+            title = '{} (configuration.yaml)'.format(import_config[CONF_PLATE])
+
+        return self.async_create_entry(title=title, data=import_config)
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
