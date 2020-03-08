@@ -1,5 +1,5 @@
 """
-RDW sensor version 2.9.0 Eelco Huininga 2019-2020
+RDW sensor version 2.9.1 Eelco Huininga 2019-2020
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
@@ -41,7 +41,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     for sensor_type in entry.data[CONF_SENSORS]:
         _LOGGER.debug("async_setup_entry: plate=%s setup for %s", entry.data[CONF_PLATE], sensor_type)
         dev.append(RDWSensor(
-            hass.data[DOMAIN][entry.data[CONF_PLATE]],
+            hass.data[DOMAIN][entry.data[CONF_PLATE]]['entity'],
             sensor_type,
             entry.data[CONF_NAME],
             entry.data[CONF_PLATE],

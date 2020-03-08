@@ -11,7 +11,7 @@ CONF_SENSOR = "sensor"
 
 DEFAULT_NAME = 'RDW'
 DEFAULT_ATTRIBUTION = 'Data provided by RDW'
-DEFAULT_SCAN_INTERVAL = timedelta(minutes=2)
+DEFAULT_SCAN_INTERVAL = timedelta(minutes=60)
 
 DOMAIN = "rdw"
 DATA_KEY = DOMAIN

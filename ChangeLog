@@ -1,3 +1,14 @@
+v2.9.1:
+* Fixed error when rebooting after setting up multiple cars using the GUI entity configuration
+* Fixed auto-naming entities using configuration.yaml when no name is specified by user
+
+v2.9.0:
+* Rewritten all functions to async variants
+* Added configuration by GUI entity register (config_flow)
+* The API is now called using the sodapy library, which is the recommended by RDW themselves
+* Moved from @Throttle to async_track_time_interval()
+* More efficient managing of update() calls so sensors get updated according to SCAN_INTERVAL instead of the default of every 10 seconds or so
+
 v2.0.2:
 * Fixed SyntaxWarning (see issue #6)
 * Fixed error when no recall data is available
@@ -7,16 +18,9 @@ v2.0.1:
 * Added __init__.py (required for merge in home-assistant base code)
 * Added manifest.json (required for merge in home-assistant base code)
 
+
 v2.0.0:
 * Added ChangeLog
 * Added detailed recall information as attributes of the recall sensor
 * The sensor icons will change to a warning icon if the APK date has expired, if the car isn't insured or if there's a unresolved recall
 * Fixed custom_updater.json
-
-v2.9.0:
-* Rewritten all functions to async variants
-* Added configuration by GUI entity register (config_flow)
-* The API is now called using the sodapy library, which is the recommended by RDW themselves
-* Moved from @Throttle to async_track_time_interval()
-* More efficient managing of update() calls so sensors get updated according to SCAN_INTERVAL instead of the default of every 10 seconds or so
-
