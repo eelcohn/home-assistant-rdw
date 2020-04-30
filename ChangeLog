@@ -1,3 +1,7 @@
+v2.9.2:
+* Moved '.translations' to 'translations'
+* Simplified configured_instances() in config_flow.py
+
 v2.9.1:
 * Fixed error when rebooting after setting up multiple cars using the GUI entity configuration
 * Fixed auto-naming entities using configuration.yaml when no name is specified by user
