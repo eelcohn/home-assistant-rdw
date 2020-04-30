@@ -1,5 +1,5 @@
 """
-RDW config flow version 2.9.1 Eelco Huininga 2019-2020
+RDW config flow version 2.9.2 Eelco Huininga 2019-2020
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
@@ -43,22 +43,14 @@ _LOGGER.debug("config_flow called")
 
 @callback
 def configured_instances(hass):
-    """Return a set of the configured devices."""
-
-    _LOGGER.debug("config_flow::configured_instances called.")
-
-#    return set(entry.data[DOMAIN][CONF_PLATE] for entry
-#        in hass.config_entries.async_entries(DOMAIN))
+    """Return a set of configured RDW instances."""
 
     if DATA_KEY in hass.data:
-        _LOGGER.debug("config_flow::configured_instances returned %s", hass.data[DATA_KEY])
-        return set(
-            '{0}'.format(
-                entry,
-            )
-            for entry in hass.data[DATA_KEY])
+        result = set(entry._plate for entry in hass.data[DATA_KEY])
+        _LOGGER.debug("config_flow::configured_instances called - returned configured instances %s", result)
+        return result
     else:
-        _LOGGER.debug("config_flow::configured_instances no instances found")
+        _LOGGER.debug("config_flow::configured_instances called - no instances found")
         return {}
 
 
