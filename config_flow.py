@@ -1,5 +1,5 @@
 """
-RDW config flow version 2.9.2 Eelco Huininga 2019-2020
+RDW config flow version 2.9.3 Eelco Huininga 2019-2020
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
@@ -46,7 +46,7 @@ def configured_instances(hass):
     """Return a set of configured RDW instances."""
 
     if DATA_KEY in hass.data:
-        result = set(entry._plate for entry in hass.data[DATA_KEY])
+        result = set(entry for entry in hass.data[DATA_KEY])
         _LOGGER.debug("config_flow::configured_instances called - returned configured instances %s", result)
         return result
     else:

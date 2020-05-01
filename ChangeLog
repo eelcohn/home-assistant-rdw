@@ -1,3 +1,6 @@
+v2.9.3:
+* Fixed error when using UI to add a 2nd car (bug introduced in v2.9.2)
+
 v2.9.2:
 * Moved '.translations' to 'translations'
 * Simplified configured_instances() in config_flow.py
