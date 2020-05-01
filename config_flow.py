@@ -46,7 +46,7 @@ def configured_instances(hass):
     """Return a set of configured RDW instances."""
 
     if DATA_KEY in hass.data:
-        result = set(entry._plate for entry in hass.data[DATA_KEY])
+        result = set(entry for entry in hass.data[DATA_KEY])
         _LOGGER.debug("config_flow::configured_instances called - returned configured instances %s", result)
         return result
     else:
