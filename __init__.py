@@ -1,5 +1,5 @@
 """
-RDW component version 2.9.3 Eelco Huininga 2019-2020
+RDW component - Eelco Huininga 2019-2020
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
@@ -182,7 +182,11 @@ class RDWEntity(Entity):
         self.apkdata = None
         self.recalldata = None
 
+	# Fixed useless warning about missing app_token (not needed by RDW)
+        level = logging.getLogger().level
+        logging.getLogger().setLevel(logging.ERROR)
         self.client = Socrata("opendata.rdw.nl", "")
+        logging.getLogger().setLevel(level)
 
     async def async_setup(self):
         """Schedule initial and regular updates based on configured time interval."""

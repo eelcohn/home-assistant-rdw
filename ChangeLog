@@ -1,3 +1,6 @@
+v2.9.4:
+* Fixed useless warning about missing app_token (not needed by RDW)
+
 v2.9.3:
 * Fixed error when using UI to add a 2nd car (bug introduced in v2.9.2)
 
