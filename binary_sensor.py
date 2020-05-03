@@ -1,5 +1,5 @@
 """
-RDW sensor version 2.9.3 Eelco Huininga 2019-2020
+RDW binary sensor - Eelco Huininga 2019-2020
 Retrieves information on cars registered in the Netherlands. Currently
 implemented sensors are APK (general periodic check) insurance status
 and recall information
