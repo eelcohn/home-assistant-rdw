@@ -5,7 +5,7 @@ implemented sensors are APK (general periodic check) insurance status
 and recall information
 """
 
-
+from functools import partial
 import logging
 import voluptuous as vol
 from datetime import (
@@ -209,10 +209,13 @@ class RDWEntity(Entity):
 
         # Get APK data from the RDW Open Data API
         try:
-            self.apkdata = self.client.get(
-                RDW_ENDPOINTS['apk']['endpoint'],
-#                ('{}={}'.format(RDW_ENDPOINTS['apk']['rdwfilter'], self._plate)),
-                kenteken=self._plate
+            self.apkdata = await self._hass.async_add_executor_job(
+                partial(
+                    self.client.get,
+                    RDW_ENDPOINTS['apk']['endpoint'],
+#                    ('{}={}'.format(RDW_ENDPOINTS['apk']['rdwfilter'], self._plate)),
+                    kenteken=self._plate
+                )
             )
         except Exception as e:
             _LOGGER.warning("Unable to update data from endpoint %s for %s: %s", RDW_ENDPOINTS['apk']['endpoint'], self._plate, e)
@@ -223,10 +226,13 @@ class RDWEntity(Entity):
 
         # Get Recall data from the RDW Open Data API
         try:
-            self.recalldata = self.client.get(
-                RDW_ENDPOINTS['recall']['endpoint'],
-#                ('{}={}'.format(RDW_ENDPOINTS['recall']['rdwfilter'], self._plate)),
-                kenteken=self._plate
+            self.recalldata = await self._hass.async_add_executor_job(
+                partial(
+                    self.client.get,
+                    RDW_ENDPOINTS['recall']['endpoint'],
+#                    ('{}={}'.format(RDW_ENDPOINTS['recall']['rdwfilter'], self._plate)),
+                    kenteken=self._plate
+                )
             )
         except Exception as e:
             _LOGGER.warning("Unable to update data from endpoint %s for %s: %s", RDW_ENDPOINTS['recall']['endpoint'], self._plate, e)

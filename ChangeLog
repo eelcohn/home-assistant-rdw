@@ -1,3 +1,7 @@
+v2.9.5:
+* Changed update interval from 1 hour to 1 day
+* Fixed 'Detected I/O inside the event loop' warning
+
 v2.9.4:
 * Fixed useless warning about missing app_token (not needed by RDW)
 
