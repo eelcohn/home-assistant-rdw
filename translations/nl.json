@@ -1,0 +1,44 @@
+{
+  "config": {
+    "title": "RDW",
+    "step": {
+      "user": {
+        "title": "Voeg APK gegevens van een Nederlandse auto toe",
+        "description": "Geef het kenteken van je auto op.",
+        "data": {
+          "plate": "Kenteken"
+        }
+      },
+      "details": {
+        "title": "Naam en datumformaat",
+        "description": "Geef een naam op en het gewenste datumformaat op",
+        "data": {
+          "name": "Naam van de auto",
+          "dateformat": "Datumformaat"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Deze auto is al geconfigureerd."
+    },
+    "error": {
+      "name_already_configured": "Deze auto is al geconfigureerd.",
+      "invalid_plate": "Ongeldig kenteken.",
+      "invalid_dateformat": "Ongeldig datumformaat.",
+      "not_registered": "Dit kenteken is niet geregistreerd bij de RDW.",
+      "connection_error": "Kan geen verbinding maken met de RDW API."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "manufacturer": "Merk",
+          "type": "Type",
+          "dateformat": "Datumformat"
+        }
+      }
+    }
+  }
+}
+

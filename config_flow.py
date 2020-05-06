@@ -20,38 +20,28 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_SCAN_INTERVAL,
     CONF_SENSORS,
+    CONF_TYPE,
 )
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
     BINARY_SENSOR_DEFAULTS,
+    CONF_MANUFACTURER,
     CONF_DATEFORMAT,
     CONF_PLATE,
     DATA_KEY,
+    DEFAULT_DATEFORMAT,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
-    SENSOR_DEFAULTS
+    SENSOR_DEFAULTS,
 )
 from . import RDWEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 _LOGGER.debug("config_flow called")
-
-
-@callback
-def configured_instances(hass):
-    """Return a set of configured RDW instances."""
-
-    if DATA_KEY in hass.data:
-        result = set(entry for entry in hass.data[DATA_KEY])
-        _LOGGER.debug("config_flow::configured_instances called - returned configured instances %s", result)
-        return result
-    else:
-        _LOGGER.debug("config_flow::configured_instances called - no instances found")
-        return {}
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -65,6 +55,12 @@ class RDWFlowHandler(config_entries.ConfigFlow):
 
     _hassio_discovery = None
 
+#    @staticmethod
+#    @callback
+#    def async_get_options_flow(config_entry):
+#        """Get the options flow for this handler."""
+#        return OptionsFlowHandler(config_entry)
+
     def __init__(self):
         """Initialize the config flow."""
 
@@ -77,14 +73,23 @@ class RDWFlowHandler(config_entries.ConfigFlow):
 
         _LOGGER.debug("RDWFlowHandler::async_step_import called %s", import_config)
 
-#        if self._async_current_entries():
-        if import_config[CONF_PLATE] in configured_instances(self.hass):
-            _LOGGER.debug("RDWFlowHandler::async_step_import aborted for %s (already configured)", import_config[CONF_PLATE])
-            return self.async_abort(reason="already_configured")
+        # Check if already configured
+        await self.async_set_unique_id(import_config[CONF_PLATE], raise_on_progress=False)
+        self._abort_if_unique_id_configured()
 
         import_config.update({
             CONF_SCAN_INTERVAL: int(import_config[CONF_SCAN_INTERVAL].total_seconds()),
         })
+
+        if not CONF_MANUFACTURER in import_config:
+            import_config.update({
+                CONF_MANUFACTURER: None,
+            })
+
+        if not CONF_TYPE in import_config:
+            import_config.update({
+                CONF_TYPE: None,
+            })
 
         if import_config[CONF_NAME] is not None:
             title = '{} (configuration.yaml)'.format(import_config[CONF_NAME])
@@ -104,8 +109,9 @@ class RDWFlowHandler(config_entries.ConfigFlow):
 
             user_input.update({CONF_PLATE: user_input[CONF_PLATE].upper().replace("-", "")})
 
-            if user_input[CONF_PLATE] in configured_instances(self.hass):
-                return self.async_abort(reason="already_configured")
+            # Check if already configured
+            await self.async_set_unique_id(user_input[CONF_PLATE], raise_on_progress=False)
+            self._abort_if_unique_id_configured()
 
             try:
                 rdwdata = RDWEntity(self.hass, user_input[CONF_PLATE])
@@ -124,11 +130,15 @@ class RDWFlowHandler(config_entries.ConfigFlow):
             else:
                 _LOGGER.debug("RDWFlowHandler::async_step_user rdwdata.update() succesfull. rdwdata=%s", rdwdata)
 
-                name = await rdwdata.create_name(rdwdata.brand, rdwdata.type)
-
                 self.config = {
                     CONF_PLATE: user_input[CONF_PLATE],
-                    CONF_NAME: name,
+                    CONF_NAME: rdwdata._name,
+                    CONF_MANUFACTURER: rdwdata.brand,
+                    CONF_TYPE: rdwdata.type,
+                    CONF_BINARY_SENSORS: BINARY_SENSOR_DEFAULTS,
+                    CONF_SENSORS: SENSOR_DEFAULTS,
+                    CONF_SCAN_INTERVAL: int(user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL.total_seconds())),
+                    CONF_DATEFORMAT: DEFAULT_DATEFORMAT,
                 }
                 _LOGGER.debug("config=%s", self.config)
 
@@ -156,9 +166,6 @@ class RDWFlowHandler(config_entries.ConfigFlow):
 
             _LOGGER.debug("RDWFlowHandler::async_step_details")
 
-            if user_input[CONF_NAME] in configured_instances(self.hass):
-                errors["details"] = "name_already_configured"
-
             if CONF_DATEFORMAT in user_input:
                 if validate_dateformat(user_input[CONF_DATEFORMAT]) == False:
                     errors["details"] = "invalid_dateformat"
@@ -167,10 +174,6 @@ class RDWFlowHandler(config_entries.ConfigFlow):
 
             self.config.update({
                 CONF_NAME: user_input[CONF_NAME],
-                CONF_DATEFORMAT: user_input[CONF_DATEFORMAT],
-                CONF_SCAN_INTERVAL: int(user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL.total_seconds())),
-                CONF_BINARY_SENSORS: BINARY_SENSOR_DEFAULTS,
-                CONF_SENSORS: SENSOR_DEFAULTS,
             })
 
             return self.async_create_entry(title=user_input[CONF_NAME], data=self.config)
@@ -181,10 +184,57 @@ class RDWFlowHandler(config_entries.ConfigFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(CONF_NAME, default=self.config[CONF_NAME]): str,
-                    vol.Optional(CONF_DATEFORMAT): str,
                 }
             ),
             errors=errors,
+        )
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle options."""
+
+    _LOGGER.debug("OptionsFlowHandler class initialized")
+
+    def __init__(self, config_entry):
+        """Initialize options flow."""
+        _LOGGER.debug("OptionsFlowHandler::__init__")
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        _LOGGER.debug("OptionsFlowHandler::async_step_init")
+        if user_input is not None:
+            _LOGGER.debug("OptionsFlowHandler::async_step_init create entry %s", user_input)
+            return self.async_create_entry(title="", data=user_input)
+
+        _LOGGER.debug("OptionsFlowHandler::async_step_init options=%s", self.config_entry.data)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_DATEFORMAT,
+                        default=self.config_entry.data.get(
+                            CONF_DATEFORMAT,
+                            None,
+                        ),
+                    ): str,
+                    vol.Optional(
+                        CONF_MANUFACTURER,
+                        default=self.config_entry.data.get(
+                            CONF_MANUFACTURER,
+                            None,
+                        ),
+                    ): str,
+                    vol.Optional(
+                        CONF_TYPE,
+                        default=self.config_entry.data.get(
+                            CONF_TYPE,
+                            None,
+                        ),
+                    ): str,
+                }
+            ),
         )
 
 

@@ -175,6 +175,7 @@ class RDWEntity(Entity):
         self.brand = None
         self.expdate = None
         self.insured = None
+        self._name = None
         self.recall = None
         self.type = None
         self.attrs = {}
@@ -247,15 +248,22 @@ class RDWEntity(Entity):
 
         # Brand (Merk)
         try:
-            self.brand = self.apkdata[0]['merk']
+            self.brand = self.apkdata[0]['merk'].title()
         except:
             self.brand = None
 
         # Type (Handelsbenaming)
         try:
-            self.type = self.apkdata[0]['handelsbenaming']
+            self.type = self.apkdata[0]['handelsbenaming'].replace(self.apkdata[0]['merk'], '').title()
         except:
             self.type = None
+
+        # Name of the car
+        # The RDW model field sometimes also contains the brand of the car. We need to check that so that we get the name for our integration right
+        if self.brand is not None or self.type is not None:
+            self._name = '{} {}'.format(self.brand, self.type).title()
+        else:
+            self._name = None
 
         # Expire date (Vervaldatum APK)
         try:
@@ -299,14 +307,6 @@ class RDWEntity(Entity):
 
         return False
 
-    async def create_name(self, car_brand, car_type):
-        """Generate a name of this car"""
-
-        # The RDW model field sometimes also contains the brand of the car. We need to check that so that we get the name for our integration right
-        if car_type.startswith(car_brand):
-            return car_type.title()
-        else:
-            return '{} {}'.format(car_brand, car_type).title()
 
     class ConnectionError(Exception):
         """Can't connect to the RDW OpenData API"""

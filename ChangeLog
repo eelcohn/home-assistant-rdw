@@ -1,3 +1,12 @@
+v2.9.7 (to be released):
+* Added device configuration options like dateformat, brand and type
+
+v2.9.6:
+* Fixed detection of already setup entities when using configuration.yaml
+* Your car is now presented as a device which all entities are linked to
+* Moved date format from UI setup to configuration options
+* Added Dutch translation
+
 v2.9.5:
 * Changed update interval from 1 hour to 1 day
 * Fixed 'Detected I/O inside the event loop' warning

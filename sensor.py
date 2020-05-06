@@ -74,6 +74,19 @@ class RDWSensor(Entity):
         self._unit_of_measurement = None
 
     @property
+    def device_info(self):
+        """Return the device info."""
+        result = {
+            "identifiers": {(DOMAIN, self._plate.lower())},
+            "name": self._name,
+            "model": self._data.type,
+            "manufacturer": self._data.brand,
+            "via_device": (DOMAIN),
+        }
+        _LOGGER.debug("RDWSensor::device_info result=%s", result)
+        return result
+
+    @property
     def available(self):
         """Return the availability of the sensor."""
         return self._available
