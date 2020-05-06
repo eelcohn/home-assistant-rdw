@@ -28,6 +28,17 @@
       "not_registered": "This plate ID is not registered at RDW.",
       "connection_error": "Could not get data from the RDW API."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "manufacturer": "Brand",
+          "type": "Type",
+          "dateformat": "Date format"
+        }
+      }
+    }
   }
 }
 

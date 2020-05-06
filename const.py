@@ -5,12 +5,14 @@ from datetime import (
 )
 
 CONF_BINARY_SENSOR = "binary_sensor"
+CONF_MANUFACTURER = "manufacturer"
 CONF_DATEFORMAT = 'dateformat'
 CONF_PLATE = 'plate'
 CONF_SENSOR = "sensor"
 
 DEFAULT_NAME = 'RDW'
 DEFAULT_ATTRIBUTION = 'Data provided by RDW'
+DEFAULT_DATEFORMAT = None
 DEFAULT_SCAN_INTERVAL = timedelta(hours=24)
 
 DOMAIN = "rdw"
