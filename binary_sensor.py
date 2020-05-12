@@ -9,6 +9,7 @@ import logging
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
+    ATTR_ID,
     CONF_BINARY_SENSORS,
     CONF_NAME,
     STATE_UNKNOWN,
@@ -18,6 +19,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 
 from .const import (
+    ATTRIBUTION,
     BINARY_SENSOR_TYPES,
     CONF_PLATE,
     DEFAULT_ATTRIBUTION,
@@ -64,17 +66,17 @@ class RDWBinarySensor(Entity):
         self._plate = plate
         self._icon = BINARY_SENSOR_TYPES[sensor_type][1]
         self._state = None
-        self._attributes = {ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION}
         self._unit_of_measurement = None
+        self._unique_id = '{}_{}_{}'.format(DOMAIN, self._plate, self._sensor_type)
 
     @property
     def device_info(self):
         """Return the device info."""
         result = {
             "identifiers": {(DOMAIN, self._plate.lower())},
+            "manufacturer": self._data.manufacturer,
+            "model": self._data.model,
             "name": self._name,
-            "model": self._data.type,
-            "manufacturer": self._data.brand,
             "via_device": (DOMAIN),
         }
         _LOGGER.debug("RDWBinarySensor::device_info result=%s", result)
@@ -88,7 +90,14 @@ class RDWBinarySensor(Entity):
     @property
     def device_state_attributes(self):
         """Return the state attributes."""
-        return self._attributes    
+
+        # Set default attribution
+        attributes = {
+            ATTR_ATTRIBUTION: ATTRIBUTION,
+            ATTR_ID: f"nl_{self._plate.lower()}",
+        }
+
+        return attributes
 
     @property
     def icon(self):
@@ -114,6 +123,11 @@ class RDWBinarySensor(Entity):
     def unique_id(self):
         """Return the unique ID of the sensor."""
         return '{}_{}_{}'.format(DOMAIN, self._plate, self._sensor_type)
+
+    @property
+    def unique_id(self):
+        """Return the unique ID of the sensor."""
+        return self._unique_id
 
     @property
     def unit_of_measurement(self):

@@ -20,7 +20,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_SCAN_INTERVAL,
     CONF_SENSORS,
-    CONF_TYPE,
 )
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
@@ -28,6 +27,7 @@ from homeassistant.helpers import config_validation as cv
 from .const import (
     BINARY_SENSOR_DEFAULTS,
     CONF_MANUFACTURER,
+    CONF_MODEL,
     CONF_DATEFORMAT,
     CONF_PLATE,
     DATA_KEY,
@@ -51,15 +51,9 @@ class RDWFlowHandler(config_entries.ConfigFlow):
     _LOGGER.debug("RDWFlowHandler class initialized")
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
+    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     _hassio_discovery = None
-
-#    @staticmethod
-#    @callback
-#    def async_get_options_flow(config_entry):
-#        """Get the options flow for this handler."""
-#        return OptionsFlowHandler(config_entry)
 
     def __init__(self):
         """Initialize the config flow."""
@@ -86,9 +80,9 @@ class RDWFlowHandler(config_entries.ConfigFlow):
                 CONF_MANUFACTURER: None,
             })
 
-        if not CONF_TYPE in import_config:
+        if not CONF_MODEL in import_config:
             import_config.update({
-                CONF_TYPE: None,
+                CONF_MODEL: None,
             })
 
         if import_config[CONF_NAME] is not None:
@@ -104,6 +98,7 @@ class RDWFlowHandler(config_entries.ConfigFlow):
         _LOGGER.debug("RDWFlowHandler::async_step_user called %s", user_input)
 
         errors = {}
+        config_entry = {'data', user_input}
 
         if user_input is not None:
 
@@ -114,7 +109,7 @@ class RDWFlowHandler(config_entries.ConfigFlow):
             self._abort_if_unique_id_configured()
 
             try:
-                rdwdata = RDWEntity(self.hass, user_input[CONF_PLATE])
+                rdwdata = RDWEntity(self.hass, config_entry)
                 await rdwdata.async_update()
 
             except RDWEntity.InvalidPlate:
@@ -133,8 +128,8 @@ class RDWFlowHandler(config_entries.ConfigFlow):
                 self.config = {
                     CONF_PLATE: user_input[CONF_PLATE],
                     CONF_NAME: rdwdata._name,
-                    CONF_MANUFACTURER: rdwdata.brand,
-                    CONF_TYPE: rdwdata.type,
+                    CONF_MANUFACTURER: rdwdata.manufacturer,
+                    CONF_MODEL: rdwdata.model,
                     CONF_BINARY_SENSORS: BINARY_SENSOR_DEFAULTS,
                     CONF_SENSORS: SENSOR_DEFAULTS,
                     CONF_SCAN_INTERVAL: int(user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL.total_seconds())),
@@ -170,7 +165,7 @@ class RDWFlowHandler(config_entries.ConfigFlow):
                 if validate_dateformat(user_input[CONF_DATEFORMAT]) == False:
                     errors["details"] = "invalid_dateformat"
             else:
-                user_input[CONF_DATEFORMAT] = None
+                user_input[CONF_DATEFORMAT] = DEFAULT_DATEFORMAT
 
             self.config.update({
                 CONF_NAME: user_input[CONF_NAME],
@@ -188,6 +183,12 @@ class RDWFlowHandler(config_entries.ConfigFlow):
             ),
             errors=errors,
         )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return OptionsFlowHandler(config_entry)
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
@@ -207,30 +208,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             _LOGGER.debug("OptionsFlowHandler::async_step_init create entry %s", user_input)
             return self.async_create_entry(title="", data=user_input)
 
-        _LOGGER.debug("OptionsFlowHandler::async_step_init options=%s", self.config_entry.data)
+        _LOGGER.debug("OptionsFlowHandler::async_step_init data=%s options=%s", self.config_entry.data, self.config_entry.options)
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
                     vol.Optional(
                         CONF_DATEFORMAT,
-                        default=self.config_entry.data.get(
+                        default=self.config_entry.options.get(
                             CONF_DATEFORMAT,
-                            None,
-                        ),
-                    ): str,
-                    vol.Optional(
-                        CONF_MANUFACTURER,
-                        default=self.config_entry.data.get(
-                            CONF_MANUFACTURER,
-                            None,
-                        ),
-                    ): str,
-                    vol.Optional(
-                        CONF_TYPE,
-                        default=self.config_entry.data.get(
-                            CONF_TYPE,
-                            None,
+                            DEFAULT_DATEFORMAT,
                         ),
                     ): str,
                 }

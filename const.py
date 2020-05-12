@@ -4,8 +4,11 @@ from datetime import (
     timedelta,
 )
 
+ATTRIBUTION = "Data provided by RDW"
+
 CONF_BINARY_SENSOR = "binary_sensor"
 CONF_MANUFACTURER = "manufacturer"
+CONF_MODEL = "model"
 CONF_DATEFORMAT = 'dateformat'
 CONF_PLATE = 'plate'
 CONF_SENSOR = "sensor"
@@ -31,6 +34,7 @@ RDW_ENDPOINTS = {
 RESOURCE_RECALLINFO = 'https://terugroepregister.rdw.nl/Pages/Terugroepactie.aspx?mgpnummer={}'
 
 TOPIC_DATA_UPDATE = f"{DOMAIN}_data_update"
+UNDO_OPTIONS_LISTENER = "undo_update_listener"
 
 BINARY_SENSOR_TYPES = {
     'insured': ['Insured', 'mdi:car',      'mdi:alert-outline'],

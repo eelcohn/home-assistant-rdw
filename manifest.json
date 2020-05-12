@@ -1,7 +1,6 @@
 {
 	"codeowners": ["@eelcohn"],
 	"config_flow": true,
-	"dependencies": [],
 	"documentation": "https://www.home-assistant.io/integrations/rdw",
 	"domain": "rdw",
 	"name": "RDW",
