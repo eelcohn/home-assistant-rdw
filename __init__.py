@@ -38,6 +38,7 @@ from .const import (
     DATA_KEY,
     DATA_LISTENER,
     DEFAULT_ATTRIBUTION,
+    DEFAULT_DATEFORMAT,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -47,6 +48,7 @@ from .const import (
     SENSOR_DEFAULTS,
     SENSOR_TYPES,
     TOPIC_DATA_UPDATE,
+    UNDO_OPTIONS_LISTENER,
 )
 
 from sodapy import Socrata
@@ -62,7 +64,7 @@ CONFIG_SCHEMA = vol.Schema(
                     {
                         vol.Required(CONF_PLATE): cv.string,
                         vol.Optional(CONF_BINARY_SENSORS, default=BINARY_SENSOR_DEFAULTS): vol.All(cv.ensure_list, [vol.In(BINARY_SENSOR_TYPES)]),
-                        vol.Optional(CONF_DATEFORMAT, default=None): vol.Any(cv.string, None),
+                        vol.Optional(CONF_DATEFORMAT, default=DEFAULT_DATEFORMAT): vol.Any(cv.string, None),
                         vol.Optional(CONF_NAME, default=None): vol.Any(cv.string, None),
                         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): cv.time_period,
                         vol.Optional(CONF_SENSORS, default=SENSOR_DEFAULTS): vol.All(cv.ensure_list, [vol.In(SENSOR_TYPES)]),
@@ -101,12 +103,12 @@ async def async_setup_entry(hass, config_entry):
 
     _LOGGER.debug("__init__::async_setup_entry config_entry.data=%s", config_entry.data)
 
-    rdw = RDWEntity(hass, config_entry.data[CONF_PLATE])
+    rdw = RDWEntity(hass, config_entry)
     if not await rdw.async_update():
         raise PlatformNotReady
 
     if config_entry.data[CONF_NAME] is None:
-        name = await rdw.create_name(rdw.brand, rdw.type)
+        name = await rdw.create_name(rdw.manufacturer, rdw.model)
         _LOGGER.debug("RDWEntity::async_setup_entry name: %s", name)
         config_entry.data.update({CONF_NAME: name})
 
@@ -114,7 +116,14 @@ async def async_setup_entry(hass, config_entry):
     if DOMAIN not in hass.data:
         hass.data.update({DOMAIN: {}})
 
-    hass.data[DOMAIN].update({config_entry.data[CONF_PLATE]: {'entity': rdw}})
+    undo_listener = config_entry.add_update_listener(async_options_updated)
+
+    hass.data[DOMAIN].update({
+        config_entry.data[CONF_PLATE]: {
+            'entity': rdw,
+            UNDO_OPTIONS_LISTENER: undo_listener,
+        }
+    })
 
     for component in (CONF_BINARY_SENSOR, CONF_SENSOR):
         hass.async_create_task(
@@ -143,7 +152,6 @@ async def async_setup_entry(hass, config_entry):
 
     return True
 
-
 async def async_unload_entry(hass, config_entry):
     """Unload a RDW config entry."""
 
@@ -155,7 +163,13 @@ async def async_unload_entry(hass, config_entry):
     for component in ("binary_sensor", "sensor"):
         await hass.config_entries.async_forward_entry_unload(config_entry, component)
 
+    hass.data[DOMAIN][config_entry.data[CONF_PLATE]][UNDO_OPTIONS_LISTENER]()
+
     return True
+
+async def async_options_updated(hass, config_entry):
+    """Handle options update."""
+    await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 class RDWEntity(Entity):
@@ -163,25 +177,26 @@ class RDWEntity(Entity):
 
     _LOGGER.debug("RDWEntity class initialized")
 
-    def __init__(self, hass, plate):
+    def __init__(self, hass, config_entry):
 
-        _LOGGER.debug("RDWEntity::__init__ called plate=%s", plate)
-
-        if not self.validate_plate(plate):
-            raise(RDWEntity.InvalidPlate('The plate with ID %s is invalid.' % plate))
-
-        self._hass = hass
-        self._plate = plate
-        self.brand = None
+        self.hass = hass
+        self.config_entry = config_entry
+        self._plate = self.config_entry.data[CONF_PLATE]
+        self.manufacturer = None
         self.expdate = None
         self.insured = None
         self._name = None
         self.recall = None
-        self.type = None
+        self.model = None
         self.attrs = {}
 
         self.apkdata = None
         self.recalldata = None
+
+        _LOGGER.debug("RDWEntity::__init__ called plate=%s", self._plate)
+
+        if not self.validate_plate(self._plate):
+            raise(RDWEntity.InvalidPlate('The plate with ID %s is invalid.' % self._plate))
 
 	# Fixed useless warning about missing app_token (not needed by RDW)
         level = logging.getLogger().level
@@ -189,15 +204,28 @@ class RDWEntity(Entity):
         self.client = Socrata("opendata.rdw.nl", "")
         logging.getLogger().setLevel(level)
 
+        """Populate default options."""
+        if not self.config_entry.options:
+            data = dict(self.config_entry.data)
+            options = {
+                CONF_DATEFORMAT: data.pop(CONF_DATEFORMAT, DEFAULT_DATEFORMAT),
+            }
+
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data=data,
+                options=options
+            )
+
     async def async_setup(self):
         """Schedule initial and regular updates based on configured time interval."""
 
         _LOGGER.debug("RDWEntity::async_setup called")
 
         for domain in PLATFORMS:
-            self._hass.async_create_task(
-                self._hass.config_entries.async_forward_entry_setup(
-                    self._config_entry, domain
+            self.hass.async_create_task(
+                self.hass.config_entries.async_forward_entry_setup(
+                    self.config_entry, domain
                 )
             )
 
@@ -210,7 +238,7 @@ class RDWEntity(Entity):
 
         # Get APK data from the RDW Open Data API
         try:
-            self.apkdata = await self._hass.async_add_executor_job(
+            self.apkdata = await self.hass.async_add_executor_job(
                 partial(
                     self.client.get,
                     RDW_ENDPOINTS['apk']['endpoint'],
@@ -227,7 +255,7 @@ class RDWEntity(Entity):
 
         # Get Recall data from the RDW Open Data API
         try:
-            self.recalldata = await self._hass.async_add_executor_job(
+            self.recalldata = await self.hass.async_add_executor_job(
                 partial(
                     self.client.get,
                     RDW_ENDPOINTS['recall']['endpoint'],
@@ -246,22 +274,22 @@ class RDWEntity(Entity):
         if not self.apkdata:
             raise RDWEntity.NotRegistered
 
-        # Brand (Merk)
+        # Manufacturer (Merk)
         try:
-            self.brand = self.apkdata[0]['merk'].title()
+            self.manufacturer = self.apkdata[0]['merk'].title()
         except:
-            self.brand = None
+            self.manufacturer = None
 
-        # Type (Handelsbenaming)
+        # Model (Handelsbenaming)
         try:
-            self.type = self.apkdata[0]['handelsbenaming'].replace(self.apkdata[0]['merk'], '').title()
+            self.model = self.apkdata[0]['handelsbenaming'].replace(self.apkdata[0]['merk'], '').title()
         except:
-            self.type = None
+            self.model = None
 
         # Name of the car
-        # The RDW model field sometimes also contains the brand of the car. We need to check that so that we get the name for our integration right
-        if self.brand is not None or self.type is not None:
-            self._name = '{} {}'.format(self.brand, self.type).title()
+        # The RDW model field sometimes also contains the manufacturer of the car. We need to check that so that we get the name for our integration right
+        if self.manufacturer is not None or self.model is not None:
+            self._name = '{} {}'.format(self.manufacturer, self.model).title()
         else:
             self._name = None
 
@@ -292,9 +320,9 @@ class RDWEntity(Entity):
         """Return the device info."""
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
+            "manufacturer": self.manufacturer,
+            "model": self.model,
             "name": self.name,
-            "model": self.type,
-            "manufacturer": self.brand,
             "via_device": (DOMAIN),
         }
 
@@ -306,6 +334,19 @@ class RDWEntity(Entity):
                 return True
 
         return False
+
+    async def get_apk_date(self):
+        if self.expdate is not None:
+            apkdate = datetime.strptime(self.expdate, RDW_DATEFORMAT)
+            if self.config_entry.options[CONF_DATEFORMAT] is not None:
+                return apkdate.date().strftime(self.config_entry.options[CONF_DATEFORMAT])
+            else:
+                return apkdate.date().isoformat()
+        else:
+            return None
+
+    async def is_apk_valid(self):
+        return datetime.strptime(self.expdate, RDW_DATEFORMAT) >= datetime.now()
 
 
     class ConnectionError(Exception):

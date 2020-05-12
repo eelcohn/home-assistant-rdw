@@ -10,11 +10,10 @@
         }
       },
       "details": {
-        "title": "Name and dateformat",
-        "description": "Please enter a name and preferred date format",
+        "title": "Give your car a name",
+        "description": "Please enter a name for the car",
         "data": {
-          "name": "Name of the car",
-          "dateformat": "Date format"
+          "name": "Name of the car"
         }
       }
     },
@@ -33,8 +32,6 @@
     "step": {
       "init": {
         "data": {
-          "manufacturer": "Brand",
-          "type": "Type",
           "dateformat": "Date format"
         }
       }

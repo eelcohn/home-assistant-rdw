@@ -10,6 +10,7 @@ import logging
 
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
+    ATTR_ID,
     CONF_NAME,
     CONF_SENSORS,
     STATE_UNKNOWN,
@@ -20,11 +21,10 @@ from homeassistant.helpers.entity import Entity
 
 
 from .const import (
+    ATTRIBUTION,
     CONF_PLATE,
-    CONF_DATEFORMAT,
     DEFAULT_ATTRIBUTION,
     DOMAIN,
-    RDW_DATEFORMAT,
     SENSOR_TYPES,
     TOPIC_DATA_UPDATE,
 )
@@ -37,19 +37,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     _LOGGER.debug("async_setup_entry: called")
 
-    dev = []
+    sensors = []
     for sensor_type in entry.data[CONF_SENSORS]:
         _LOGGER.debug("async_setup_entry: plate=%s setup for %s", entry.data[CONF_PLATE], sensor_type)
-        dev.append(RDWSensor(
+        sensors.append(RDWSensor(
             hass.data[DOMAIN][entry.data[CONF_PLATE]]['entity'],
             sensor_type,
             entry.data[CONF_NAME],
             entry.data[CONF_PLATE],
-            entry.data[CONF_DATEFORMAT],
         )
     )
 
-    async_add_entities(dev, True)
+    async_add_entities(sensors, True)
 
 
 class RDWSensor(Entity):
@@ -57,7 +56,7 @@ class RDWSensor(Entity):
 
     _LOGGER.debug("RDWSensor class initialized")
 
-    def __init__(self, rdw, sensor_type, name, plate, dateformat):
+    def __init__(self, rdw, sensor_type, name, plate):
         """Initialize the sensor."""
 
         _LOGGER.debug("RDWSensor::__init__ plate=%s sensor=%s", plate, sensor_type)
@@ -67,34 +66,35 @@ class RDWSensor(Entity):
         self._sensor_type = sensor_type
         self._name = name
         self._plate = plate
-        self._dateformat = dateformat
         self._icon = SENSOR_TYPES[sensor_type][1]
         self._state = None
-        self._attributes = {ATTR_ATTRIBUTION: DEFAULT_ATTRIBUTION}
         self._unit_of_measurement = None
+        self._unique_id = '{}_{}_{}'.format(DOMAIN, self._plate, self._sensor_type)
 
     @property
     def device_info(self):
         """Return the device info."""
         result = {
             "identifiers": {(DOMAIN, self._plate.lower())},
+            "manufacturer": self._data.manufacturer,
+            "model": self._data.model,
             "name": self._name,
-            "model": self._data.type,
-            "manufacturer": self._data.brand,
             "via_device": (DOMAIN),
         }
         _LOGGER.debug("RDWSensor::device_info result=%s", result)
         return result
 
     @property
-    def available(self):
-        """Return the availability of the sensor."""
-        return self._available
-
-    @property
     def device_state_attributes(self):
         """Return the state attributes."""
-        return self._attributes    
+
+        # Set default attribution
+        attributes = {
+            ATTR_ATTRIBUTION: ATTRIBUTION,
+            ATTR_ID: f"nl_{self._plate.lower()}",
+        }
+
+        return attributes
 
     @property
     def icon(self):
@@ -119,7 +119,7 @@ class RDWSensor(Entity):
     @property
     def unique_id(self):
         """Return the unique ID of the sensor."""
-        return '{}_{}_{}'.format(DOMAIN, self._plate, self._sensor_type)
+        return self._unique_id
 
     @property
     def unit_of_measurement(self):
@@ -135,15 +135,10 @@ class RDWSensor(Entity):
         self._attributes = {}
 
         if self._sensor_type == 'expdate':
-            if self._data.expdate is not None:
-                self._state = datetime.strptime(self._data.expdate, RDW_DATEFORMAT)
-                if self._dateformat is not None:
-                    self._state = self.state.date().strftime(self._dateformat)
-                else:
-                    self._state = self.state.date().isoformat()
-                if datetime.strptime(self._data.expdate, RDW_DATEFORMAT) < \
-                    datetime.now():
-                        self._icon = SENSOR_TYPES['expdate'][2]
+            self._state = await self._data.get_apk_date()
+            if not await self._data.is_apk_valid():
+                self._icon = SENSOR_TYPES['expdate'][2]
+
         elif self._sensor_type == 'recall':
             if self._data.recall is not None:
                 self._state = self._data.recall

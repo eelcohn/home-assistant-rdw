@@ -1,5 +1,8 @@
-v2.9.7 (to be released):
-* Added device configuration options like dateformat, brand and type
+v2.9.7:
+* Moved dateformat from setup configuration to the device configuration options
+* Changed CONNECTION_CLASS to CONN_CLASS_CLOUD_POLL
+* Added ATTRIBUTION to the device state attributes
+* Added ID to the device state attributes
 
 v2.9.6:
 * Fixed detection of already setup entities when using configuration.yaml
