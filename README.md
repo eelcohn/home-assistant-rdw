@@ -10,7 +10,7 @@ git clone https://github.com/eelcohn/home-assistant-rdw rdw
 ```
 
 ### Support
-Support for this module can be found in [this thread](https://community.home-assistant.io/t/custom-sensor-for-dutch-license-plate-checks-apk-check/94427)
+Support for this module can be requested by opening an [issue](https://github.com/eelcohn/home-assistant-rdw/issues). More info can be found in [this thread](https://community.home-assistant.io/t/custom-sensor-for-dutch-license-plate-checks-apk-check/94427)
 
 ### Configuration variables
 ```
