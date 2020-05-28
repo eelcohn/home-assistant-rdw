@@ -1,3 +1,6 @@
+v2.9.8:
+* Fixed error in JSON file for Dutch translation
+
 v2.9.7:
 * Moved dateformat from setup configuration to the device configuration options
 * Changed CONNECTION_CLASS to CONN_CLASS_CLOUD_POLL
