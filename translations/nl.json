@@ -13,7 +13,7 @@
         "title": "Geef de auto een naam",
         "description": "Geef een naam voor de auto op",
         "data": {
-          "name": "Naam van de auto",
+          "name": "Naam van de auto"
         }
       }
     },
@@ -38,4 +38,3 @@
     }
   }
 }
-
