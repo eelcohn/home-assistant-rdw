@@ -4,6 +4,6 @@
 	"documentation": "https://www.home-assistant.io/integrations/rdw",
 	"domain": "rdw",
 	"name": "RDW",
-	"requirements": ["sodapy==2.0.0"]
+	"requirements": ["sodapy==2.0.0"],
+  	"version": "2.9.7"
 }
-
