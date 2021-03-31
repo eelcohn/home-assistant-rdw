@@ -5,5 +5,5 @@
 	"domain": "rdw",
 	"name": "RDW",
 	"requirements": ["sodapy==2.0.0"],
-  	"version": "2.9.7"
+	"version": "2.9.7"
 }
