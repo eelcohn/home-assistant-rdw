@@ -1,3 +1,6 @@
+**_The RDW service was integrated in Home Assistant 2021.12, which makes my custom RDW integration obsolete. Please remove the custom RDW integration, and use the built-in RDW integration._**
+
+
 # home-assistant-rdw
 RDW sensor module for Home Assistant.
 
